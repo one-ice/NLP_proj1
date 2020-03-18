@@ -1,7 +1,10 @@
 # NLP_proj1
 url:
+
 Input: an article(with or without title)
+
 Output: a concised version of the article, which conclude the most significent part of the article.
+
 Time_Consumption:about 10s
 
 source of data:
