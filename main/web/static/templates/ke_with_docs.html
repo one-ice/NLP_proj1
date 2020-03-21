@@ -95,9 +95,9 @@
 
         <li><h3>Sentence Embedding - <a href="https://openreview.net/pdf?id=SyK00v5xx">Smooth Inverse Frequency (SIF)</a></h3></li>
         <p class="lead">
-            Step 1.  \(\frac{a}{a+p_w}\) , a: smooth variable, \(p_w\): the frequency of each word. <br>
+            Step 1. The weight of a vector is \(\frac{a}{a+p_w}\) , where \(a\) is a smooth variable, and \(p_w\) refers to the frequency of each word. <br>
             Step 2. Use Singular Value Decomposition (SVD) to get principal component <br>
-
+            Step 3. Remove rejection of principal components from main vectors
         </p>
 
         <li><h3>Similarity Evaluation</h3></li>
@@ -113,9 +113,10 @@
         <ol>
             <li><h4>Method 1. k-nearest neighbors algorithm (KNN)</h4></li>
             <p class="lead">
-                find the k nearest sentences, and calculate the mean of the sentences as the similarity.
-                Final Similarity: \[ S_{modified} = \frac 1 2(Sim_{v_{topic},v_i} + \frac 1 k\displaystyle\sum_{k=1}^k D_{v_i,v_k}) \]
-                \[D_{v_i,v_k} = \frac 1 {1+\lVert v_i, v_k \rVert}\]
+                Step 1. For every \(v_i= \left[ \begin{array}{c} id_{sent}\\ S_{sim}\\ \end{array} \right]\), a set of \(v_k\) is defined by \(v\) in id range [-2, 2]. Then we calculate the normalized Euclidean Distance: \[D_{v_i,v_k} = \frac 1 {1+\lVert v_i, v_k \rVert}\]<br>
+                Step 2. For every  \(v_k\), we add them together and calculate the Arithmetic mean as a auxiliary metric. The final score of a sentence is obtained by adding this parameter with raw similarity. We divide it by 2 to normalize it with an interval of (0, 1). \[ S_{modified} = \frac 1 2(Sim_{v_{topic},v_i} + \frac 1 k\displaystyle\sum_{k=1}^k D_{v_i,v_k}) \]
+
+
             </p>
             <li><h4>Method 2. Convolution</h4></li>
             <p class="lead">
