@@ -1,0 +1,207 @@
+{% extends "key_extractor.html" %}
+
+{% block documents %}
+<style type="text/css">
+    .logo {
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+.mid {
+    margin-left:auto;
+    margin-right:auto;
+    width:70%;
+}
+.place {
+    margin-top: 50px;
+}
+</style>
+    <div class="container logo mid"><img src="{{ url_for('static', filename='images/logo.png') }}" alt=""></div>
+
+
+<!--<h1>Artificial Intelligence & Natural Language Processing</h1>-->
+<h1>Construction of Unsupervised Text Automatic Summary Model</h1>
+<hr style="border:none;border-top:1px solid;">
+
+<h2>Introductions</h2>
+<hr style="border:none;border-top:1px solid;">
+<p class="lead">This model is built for extracting key sentences according to similarity among words/sentences embedding.</p>
+<p class="lead">Contributors</p>
+<p>Mind <br>
+阳西 <br>
+欧文 <br>
+陈怡冰
+</p>
+<div class="place"></div>
+<p class="lead">Project URL: <a href="http://35.194.183.66/key_extractor/">http://35.194.183.66/key_extractor/</a></p>
+<p class="lead">Github URL: <a href="https://github.com/one-ice/NLP_proj1">https://github.com/one-ice/NLP_proj1</a></p>
+
+<h2>Contents</h2>
+<hr style="border:none;border-top:2px solid;">
+<div class="container">
+    <ul>
+         <li><a href="#summary"><p class="lead">Executive Summary</p></a></li>
+         <li><a href="#usage"><p class="lead">Usage</p></a></li>
+         <li><a href="#process"><p class="lead">Process Description</p></a></li>
+         <li><a href="#addisad"><p class="lead">Advantage and Disadvantage analysis</p></a></li>
+<!--         <li><a href="#furdiscuss"><p class="lead">Further Discussion</p></a></li>-->
+         <li><a href="#refer"><p class="lead">Reference</p></a></li>
+    </ul>
+</div>
+
+<div class="place"></div>
+
+<h2>Executive Summary</h2>
+<hr style="border:none;border-top:1px solid;">
+<div id="summary">
+
+    <p class="lead">In this report, our group build a unsupervised text automatic summary model. The original data sets are Wikipedia Chinese Corpus<sup>1</sup> and Chinese News Dataset<sup>2</sup>. We use two methods to smooth trained result. Method 1 it consumes around 17 second to process a 1500 characters articles by using method1 whereas around 16 second by using method 2. In our final product, user can get an abstract covering the core content of the articles through the input article, with or without title. Two methods are provided.</p>
+</div>
+
+<h2>Usage</h2>
+<hr style="border:none;border-top:1px solid;">
+<div id="usage">
+
+    <h3>Input: </h3>
+    <p class="lead">
+
+        Title of an article - <b>Optional</b> <br>
+        Text data of an article <br>
+        Smooth method <br>
+        Abstraction percentage
+    </p>
+    <h3>Output: </h3>
+    <p class="lead">
+        Summarized text
+    </p>
+</div>
+
+<h2>Process Description</h2>
+<hr style="border:none;border-top:1px solid;">
+<div id="process">
+
+
+    <ol>
+        <li><h3>Word Segmentation</h3></li>
+        <p class="lead">Use <b>jieba</b> to divide the sentences in datasets into pieces of words</p>
+
+        <li><h3>Word Embedding</h3></li>
+        <p class="lead">
+            Use above data to train the word2vec model<sup>3</sup>. (300 dimension) <br>
+            Vector space dimensions: 300d <br>
+            Window: 5 <br>
+            Min Count: 5 <br>
+            Unknown words solution: TBD<sup>Discussion1</sup>
+        </p>
+
+        <li><h3>Sentence Embedding - <a href="https://openreview.net/pdf?id=SyK00v5xx">Smooth Inverse Frequency (SIF)</a></h3></li>
+        <p class="lead">
+            Step 1.  \(\frac{a}{a+p_w}\) , a: smooth variable, \(p_w\): the frequency of each word. <br>
+            Step 2. Use Singular Value Decomposition (SVD) to get principal component <br>
+
+        </p>
+
+        <li><h3>Similarity Evaluation</h3></li>
+        <p class="lead">
+            Calculate the similarity of the sentence vector with the article vector by Cosine Distance: \[S_{v_{topic} ,v_i}=\frac{v_{topic} \centerdot v_i}{\lVert v_{topic}\rVert\lVert v_i\rVert}\]
+
+        </p>
+
+        <li><h3>Smooth</h3></li>
+        <p class="lead">
+            Smooth the result to coherent the articles.
+        </p>
+        <ol>
+            <li><h4>Method 1. k-nearest neighbors algorithm (KNN)</h4></li>
+            <p class="lead">
+                find the k nearest sentences, and calculate the mean of the sentences as the similarity.
+                Final Similarity: \[ S_{modified} = \frac 1 2(Sim_{v_{topic},v_i} + \frac 1 k\displaystyle\sum_{k=1}^k D_{v_i,v_k}) \]
+                \[D_{v_i,v_k} = \frac 1 {1+\lVert v_i, v_k \rVert}\]
+            </p>
+            <li><h4>Method 2. Convolution</h4></li>
+            <p class="lead">
+                Using a method similar to Text-CNN. Using a (1,n) dimension kernel to catch the pattern of context<sup>4</sup>.
+                <br>
+                e.g. (1,4)kernel catch one sentences before and two sentences after the main sentences.
+            </p>
+        </ol>
+        <li><h3>Summarize</h3></li>
+        <p class="lead">
+            Choosing the top similar part of the sentences(according to abstraction percentage), then sort the chosen sentences by original order and output it.
+        </p>
+    </ol>
+</div>
+
+<h2>Advantage and Disadvantage analysis</h2>
+<hr style="border:none;border-top:1px solid;">
+<div id="addisad">
+
+    <h3>Advantages</h3>
+    <ol>
+        <li>
+            <p class="lead"><b>In terms of functionality:</b></p>
+            <p class="lead">
+                Covers the main content <br>
+                Coherent content <br>
+                Provide two approaches to users
+            </p>
+        </li>
+        <li>
+            <p class="lead"><b>In terms of Visualization:</b></p>
+            <p class="lead">
+                Clean user interface <br>
+                Adaptive to both mobile phone browser and computer web browser
+            </p>
+        </li>
+    </ol>
+    <h3>Disadvantages</h3>
+    <ol>
+        <li>
+            <p class="lead"><b>In terms of efficiency</b></p>
+            <p class="lead">
+                It is not a real time program. It takes about 10s for long article
+            </p>
+        </li>
+        <li>
+            <p class="lead"><b>In terms of corpus processing</b></p>
+            <p class="lead">
+                We separate the article by period instead of by comma for the sake of increasing the completeness and readability of sentences. Meanwhile the important sentence with unimportant portion will be reduced weight.
+            </p>
+        </li>
+    </ol>
+
+</div>
+
+<h2>Reference</h2>
+<hr style="border:none;border-top:1px solid;">
+
+<div id="refer">
+    <ul>
+        <li>
+            <p class="lead">
+                Academic Computer Club, Umeå University(2020): Ftp.acc.umu.se File Archive. Retrieve from: <a href="https://ftp.acc.umu.se/mirror/wikimedia.org/dumps/zhwiki/20191120/zhwiki-20191120-pages-articles-multistream.xml.bz2">https://ftp.acc.umu.se/mirror/wikimedia.org/dumps/zhwiki/20191120/zhwiki-20191120-pages-articles-multistream.xml.bz2</a>
+            </p>
+        </li>
+
+        <li><p class="lead">HCIT-Computing-Intelligence(2020): Datasource. Retrieve from: <a
+                href="https://github.com/HCIT-Computing-Intelligence/datasource/blob/master/export_sql_1558435.zip">https://github.com/HCIT-Computing-Intelligence/datasource/blob/master/export_sql_1558435.zip</a>
+        </p></li>
+
+        <li><p class="lead">Giuseppe Attardi(2020): WikiExtractor. Retrieve from: <a href="https://github.com/attardi/wikiextractor">https://github.com/attardi/wikiextractor</a></p></li>
+
+        <li><p class="lead">Jeff Delaney(2017): Visualizing Word Vectors with t-SNE. Retrieve from: <a
+                href="https://www.kaggle.com/jeffd23/visualizing-word-vectors-with-t-sne">https://www.kaggle.com/jeffd23/visualizing-word-vectors-with-t-sne</a>
+        </p></li>
+
+        <li><p class="lead">Sanjeev Arora, Yingyu Liang, Tengyu Ma(2017): A Simple But Tough-To-Beat Baseline For
+            Sentence Embeddings,
+            Retrieve from: <a href="https://openreview.net/pdf?id=SyK00v5xx">https://openreview.net/pdf?id=SyK00v5xx</a>
+        </p></li>
+
+        <li><p class="lead">sklearn official website, sklearn.decomposition.PCA: <a
+                href="https://scikit-learn.org/stable/modules/generated/sklearn.decomposition.PCA.html">https://scikit-learn.org/stable/modules/generated/sklearn.decomposition.PCA.html</a>
+        </p></li>
+    </ul>
+
+</div>
+
+{% endblock %}

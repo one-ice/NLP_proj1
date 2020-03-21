@@ -152,7 +152,7 @@ def write_csv(text_content, sim_list):
     csv_data.to_csv(os.path.join(data_path, "doc_sim.csv"), header=["score", "content"])
 
 
-def get_score(input_title, input_text, smooth_type):
+def get_score(input_title, input_text, smooth_type, abs_percentage):
     # wv = KeyedVectors.load(os.path.join(data_path, 'merge_with_unk.kv'), mmap='r')
     # global wv
     params = Params()
@@ -170,15 +170,15 @@ def get_score(input_title, input_text, smooth_type):
                     'compare': compare}
     if smooth_type not in smooth_type:
         raise TypeError("Inacceptable Smooth Type. valid values: 'smooth1', 'smooth2', 'compare'")
-    return smooth_types[smooth_type](df_lists)
+    return smooth_types[smooth_type](df_lists, abs_percentage)
 
 
-def compare(df_lists):
-    return smooth1(df_lists) + smooth2(df_lists)
+def compare(df_lists, abs_percentage):
+    return smooth1(df_lists, abs_percentage) + smooth2(df_lists, abs_percentage)
 
 
 @time_counter
-def smooth1(df_lists):
+def smooth1(df_lists, abs_percentage):
     x = [i[0] for i in df_lists]
     y_raw = [i[1] for i in df_lists]
     contents = [i[2] for i in df_lists]
@@ -188,31 +188,31 @@ def smooth1(df_lists):
     # plt.scatter(x, y_raw)
     # plt.scatter(x, y_modified)
     # plt.savefig(os.path.join(data_path, "compare.png"))
-    top_rank = int(len(final_sim_list) / 4)
+    top_rank = int(len(final_sim_list) * (abs_percentage / 100))
     smoothed_sim_list = final_sim_list[:top_rank]
     smoothed_sim_list = sorted(smoothed_sim_list, key=lambda e: e[0])
     return [{'smooth_method': 'smooth1', 'value': ''.join([i[2] for i in smoothed_sim_list])}]
 
 
 @time_counter
-def smooth2(df_lists):
+def smooth2(df_lists, abs_percentage):
     df_with_score = pd.DataFrame(df_lists, columns=['idx', 'score', 'content'])
-    key_contents = get_smoothed_ranked_contents(df_with_score, 'kernel4')
+    key_contents = get_smoothed_ranked_contents(df_with_score, 'kernel4', abs_percentage)
     return [{'smooth_method': 'smooth2', 'value': ''.join(key_contents)}]
 
 
 @time_counter
-def summarize_from_text(input_title, input_text, smooth_type):
-    return get_score(input_title, input_text, smooth_type)
+def summarize_from_text(input_title, input_text, smooth_type, abs_percentage):
+    return get_score(input_title, input_text, smooth_type, abs_percentage)
 
 
 @time_counter
-def summarize_from_file(title, file_path, smooth_type):
+def summarize_from_file(title, file_path, smooth_type, abs_percentage):
     with open(file_path, 'r', encoding='utf-8') as rf:
-        return summarize_from_text(title, rf.read(), smooth_type)
+        return summarize_from_text(title, rf.read(), smooth_type, abs_percentage)
 
 
 if __name__ == "__main__":
-    print(summarize_from_file("林书豪怒怼美国政客种族歧视 为武汉抗疫捐款百万", os.path.join(data_path, 'test_article'), 'smooth1'))
+    print(summarize_from_file("林书豪怒怼美国政客种族歧视 为武汉抗疫捐款百万", os.path.join(data_path, 'test_article'), 'smooth1', 25))
     print('======================')
-    print(summarize_from_file("林书豪怒怼美国政客种族歧视 为武汉抗疫捐款百万", os.path.join(data_path, 'test_article'), 'smooth2'))
+    print(summarize_from_file("林书豪怒怼美国政客种族歧视 为武汉抗疫捐款百万", os.path.join(data_path, 'test_article'), 'smooth2', 25))

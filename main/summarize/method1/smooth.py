@@ -18,7 +18,7 @@ def smooth_kernel_4(sentenceArray):
     return out
 
 
-def get_smoothed_ranked_contents(data_frame, kernel):
+def get_smoothed_ranked_contents(data_frame, kernel, abs_percentage):
     processed = data_frame
     # processed["new_score_3"] = smooth_kernel_3(processed["score"])
     processed["new_score_4"] = smooth_kernel_4(processed["score"])
@@ -28,7 +28,7 @@ def get_smoothed_ranked_contents(data_frame, kernel):
     processed.sort_values(kernel, inplace=True, ascending=False)
     # sort by kernel score
 
-    top_ranked = int(len(processed) / 4)  ##select the sentenses with top 1/4 importance
+    top_ranked = int(len(processed) * (abs_percentage / 100))  ##select the sentenses with top 1/4 importance
     tmp = processed[0:top_ranked]
     tmp.sort_values("idx", inplace=True)
     return tmp["content"]
